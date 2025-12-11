@@ -1,4 +1,5 @@
-import type { Coordinates, Rider } from "@/store/useRideStore";
+import type { Coordinates } from "@/store/useRideStore";
+import type { Rider } from "@/data/riders";
 
 const toRad = (value: number) => (value * Math.PI) / 180;
 
@@ -26,7 +27,7 @@ export const estimateFare = (distanceKm: number): number => {
 export const sortRidersByDistance = (origin: Coordinates, riders: Rider[]) => {
   return [...riders]
     .map((rider) => {
-      const distanceKm = haversineDistanceKm(origin, { lat: rider.lat, lng: rider.lng });
+      const distanceKm = haversineDistanceKm(origin, rider.location);
       return { rider, distanceKm };
     })
     .sort((a, b) => a.distanceKm - b.distanceKm);
@@ -37,5 +38,7 @@ export const estimateEtaMinutes = (distanceKm: number, speedKmh = 25): number =>
   const hours = distanceKm / speedKmh;
   return Math.max(1, Math.round(hours * 60));
 };
+
+
 
 

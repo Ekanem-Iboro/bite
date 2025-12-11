@@ -1,69 +1,110 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
-import { 
-  Search, ShoppingCart, Truck, CheckCircle, ArrowRight, Play, Download, 
-  HelpCircle, ChevronDown, Building2, CreditCard, Users, Clock 
+import {
+  Search,
+  ShoppingCart,
+  Truck,
+  CheckCircle,
+  ArrowRight,
+  Play,
+  Download,
+  HelpCircle,
+  ChevronDown,
+  Building2,
+  CreditCard,
+  Users,
+  Clock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import HeaderNew from "@/components/layout/HeaderNew";
 
 const steps = [
   {
     icon: Search,
     number: "01",
     title: "Browse & Discover",
-    description: "Explore 600+ restaurants and caterers. Filter by cuisine, dietary requirements, budget, and delivery time to find the perfect match for your team.",
-    details: ["Filter by dietary requirements", "View real menus and prices", "Read verified reviews", "Save favorites for quick reordering"],
+    description:
+      "Explore 600+ restaurants and caterers. Filter by cuisine, dietary requirements, budget, and delivery time to find the perfect match for your team.",
+    details: [
+      "Filter by dietary requirements",
+      "View real menus and prices",
+      "Read verified reviews",
+      "Save favorites for quick reordering",
+    ],
   },
   {
     icon: ShoppingCart,
     number: "02",
     title: "Customize & Order",
-    description: "Build your order with individual meals or group catering packages. Add special instructions and accommodate every dietary need.",
-    details: ["Group ordering made easy", "Individual meal selections", "Bulk discount available", "Special instructions for each item"],
+    description:
+      "Build your order with individual meals or group catering packages. Add special instructions and accommodate every dietary need.",
+    details: [
+      "Group ordering made easy",
+      "Individual meal selections",
+      "Bulk discount available",
+      "Special instructions for each item",
+    ],
   },
   {
     icon: CreditCard,
     number: "03",
     title: "Simple Payment",
-    description: "Consolidated billing for easy expense management. Set budgets, track spending, and download invoices with one click.",
-    details: ["Invoice or card payment", "Department cost codes", "Automatic receipt generation", "Monthly spending reports"],
+    description:
+      "Consolidated billing for easy expense management. Set budgets, track spending, and download invoices with one click.",
+    details: [
+      "Invoice or card payment",
+      "Department cost codes",
+      "Automatic receipt generation",
+      "Monthly spending reports",
+    ],
   },
   {
     icon: Truck,
     number: "04",
     title: "Reliable Delivery",
-    description: "Track your order in real-time. Our vetted delivery partners ensure your food arrives fresh and on time, every time.",
-    details: ["Real-time tracking", "SMS notifications", "Contactless delivery option", "Dedicated delivery windows"],
+    description:
+      "Track your order in real-time. Our vetted delivery partners ensure your food arrives fresh and on time, every time.",
+    details: [
+      "Real-time tracking",
+      "SMS notifications",
+      "Contactless delivery option",
+      "Dedicated delivery windows",
+    ],
   },
 ];
 
 const faqs = [
   {
     question: "What's the minimum order value?",
-    answer: "For SME accounts, the minimum order is £50. Enterprise clients can negotiate custom minimums based on volume.",
+    answer:
+      "For SME accounts, the minimum order is £50. Enterprise clients can negotiate custom minimums based on volume.",
   },
   {
     question: "How far in advance do I need to order?",
-    answer: "Same-day ordering is available for most restaurants with at least 2 hours notice. For larger orders (20+ people), we recommend 24-48 hours advance notice.",
+    answer:
+      "Same-day ordering is available for most restaurants with at least 2 hours notice. For larger orders (20+ people), we recommend 24-48 hours advance notice.",
   },
   {
     question: "Can I set up recurring orders?",
-    answer: "Yes! You can schedule weekly or monthly recurring orders with your preferred restaurants. Perfect for regular team lunches or office snacks.",
+    answer:
+      "Yes! You can schedule weekly or monthly recurring orders with your preferred restaurants. Perfect for regular team lunches or office snacks.",
   },
   {
     question: "How do dietary requirements work?",
-    answer: "Every restaurant clearly labels dietary options (vegetarian, vegan, gluten-free, etc.). You can filter by these requirements and add notes for allergies or specific needs.",
+    answer:
+      "Every restaurant clearly labels dietary options (vegetarian, vegan, gluten-free, etc.). You can filter by these requirements and add notes for allergies or specific needs.",
   },
   {
     question: "What if there's an issue with my order?",
-    answer: "Our support team is available during business hours via chat, email, or phone. Enterprise clients have access to 24/7 priority support.",
+    answer:
+      "Our support team is available during business hours via chat, email, or phone. Enterprise clients have access to 24/7 priority support.",
   },
   {
     question: "Can multiple people order at once?",
-    answer: "Absolutely! Our group ordering feature lets team members add their individual selections to a shared cart, with you approving the final order.",
+    answer:
+      "Absolutely! Our group ordering feature lets team members add their individual selections to a shared cart, with you approving the final order.",
   },
 ];
 
@@ -74,7 +115,7 @@ const HowItWorks = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+      <HeaderNew />
       <main className="pt-20">
         {/* Hero */}
         <section className="py-20 lg:py-32 hero-gradient-subtle">
@@ -85,13 +126,19 @@ const HowItWorks = () => {
               className="text-center max-w-3xl mx-auto"
             >
               <h1 className="font-heading text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-6">
-                How <span className="text-gradient">Just Eat for Business</span> Works
+                How <span className="text-gradient">Just Eat for Business</span>{" "}
+                Works
               </h1>
               <p className="text-xl text-muted-foreground mb-8">
-                From discovery to delivery, we've made corporate catering as simple as ordering for yourself.
+                From discovery to delivery, we've made corporate catering as
+                simple as ordering for yourself.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button variant="hero" size="xl" onClick={() => setShowVideoModal(true)}>
+                <Button
+                  variant="hero"
+                  size="xl"
+                  onClick={() => setShowVideoModal(true)}
+                >
                   <Play className="w-5 h-5" />
                   Watch Full Demo
                 </Button>
@@ -136,7 +183,9 @@ const HowItWorks = () => {
                   }`}
                 >
                   <step.icon className="w-5 h-5" />
-                  <span className="font-medium whitespace-nowrap">{step.title}</span>
+                  <span className="font-medium whitespace-nowrap">
+                    {step.title}
+                  </span>
                 </button>
               ))}
             </div>
@@ -152,7 +201,9 @@ const HowItWorks = () => {
                 className="grid lg:grid-cols-2 gap-12 items-center"
               >
                 <div>
-                  <span className="text-7xl font-bold text-primary/20">{steps[activeStep].number}</span>
+                  <span className="text-7xl font-bold text-primary/20">
+                    {steps[activeStep].number}
+                  </span>
                   <h3 className="font-heading text-3xl font-bold text-foreground mb-4 -mt-8">
                     {steps[activeStep].title}
                   </h3>
@@ -178,9 +229,13 @@ const HowItWorks = () => {
                   <div className="text-center">
                     {(() => {
                       const StepIcon = steps[activeStep].icon;
-                      return <StepIcon className="w-20 h-20 text-primary/30 mx-auto mb-4" />;
+                      return (
+                        <StepIcon className="w-20 h-20 text-primary/30 mx-auto mb-4" />
+                      );
                     })()}
-                    <p className="text-muted-foreground">Step {activeStep + 1} Visualization</p>
+                    <p className="text-muted-foreground">
+                      Step {activeStep + 1} Visualization
+                    </p>
                   </div>
                 </div>
               </motion.div>
@@ -221,10 +276,16 @@ const HowItWorks = () => {
                   className="bg-card rounded-2xl p-6 text-center shadow-card"
                 >
                   <div className="w-16 h-16 rounded-xl bg-muted flex items-center justify-center mx-auto mb-4">
-                    <span className="text-2xl font-bold text-primary">{integration.name[0]}</span>
+                    <span className="text-2xl font-bold text-primary">
+                      {integration.name[0]}
+                    </span>
                   </div>
-                  <h3 className="font-semibold text-foreground mb-1">{integration.name}</h3>
-                  <p className="text-sm text-muted-foreground">{integration.desc}</p>
+                  <h3 className="font-semibold text-foreground mb-1">
+                    {integration.name}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    {integration.desc}
+                  </p>
                 </motion.div>
               ))}
             </div>
@@ -256,10 +317,14 @@ const HowItWorks = () => {
                   className="bg-card rounded-2xl shadow-card overflow-hidden"
                 >
                   <button
-                    onClick={() => setExpandedFaq(expandedFaq === index ? null : index)}
+                    onClick={() =>
+                      setExpandedFaq(expandedFaq === index ? null : index)
+                    }
                     className="w-full flex items-center justify-between p-6 text-left"
                   >
-                    <span className="font-semibold text-foreground">{faq.question}</span>
+                    <span className="font-semibold text-foreground">
+                      {faq.question}
+                    </span>
                     <ChevronDown
                       className={`w-5 h-5 text-muted-foreground transition-transform ${
                         expandedFaq === index ? "rotate-180" : ""
@@ -301,14 +366,18 @@ const HowItWorks = () => {
                   Process Flowchart
                 </h3>
                 <p className="text-muted-foreground mb-6">
-                  Download our detailed process flowchart to share with your team.
+                  Download our detailed process flowchart to share with your
+                  team.
                 </p>
-                <Button variant="outline" onClick={() => {
-                  const link = document.createElement('a');
-                  link.href = '/process-flowchart.pdf';
-                  link.download = 'Process-Flowchart.pdf';
-                  link.click();
-                }}>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    const link = document.createElement("a");
+                    link.href = "/process-flowchart.pdf";
+                    link.download = "Process-Flowchart.pdf";
+                    link.click();
+                  }}
+                >
                   <Download className="w-4 h-4" />
                   Download PDF
                 </Button>
@@ -390,7 +459,11 @@ const HowItWorks = () => {
                   <p className="text-muted-foreground">Full Demo Video</p>
                 </div>
               </div>
-              <Button variant="ghost" className="mt-4 w-full" onClick={() => setShowVideoModal(false)}>
+              <Button
+                variant="ghost"
+                className="mt-4 w-full"
+                onClick={() => setShowVideoModal(false)}
+              >
                 Close
               </Button>
             </motion.div>

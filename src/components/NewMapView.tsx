@@ -1,9 +1,8 @@
-import { useMemo } from "react";
+import { useMemo, FC } from "react";
 import {
   GoogleMap,
   Marker,
   InfoWindow,
-  useJsApiLoader,
 } from "@react-google-maps/api";
 import type { Coordinates } from "@/store/useRideStore";
 import type { Rider } from "@/data/riders";
@@ -16,6 +15,7 @@ type Props = {
   pickup: Coordinates | null;
   dropoff: Coordinates | null;
   onRiderClick?: (id: number) => void;
+  isLoaded: boolean;
 };
 
 const containerStyle: React.CSSProperties = {
@@ -25,25 +25,20 @@ const containerStyle: React.CSSProperties = {
 
 const defaultCenter = { lat: 6.5244, lng: 3.3792 };
 
-export const GoogleMapView = ({
+export const NewMapView: FC<Props> = ({
   userLocation,
   riders,
   pickup,
   dropoff,
   onRiderClick,
-}: Props) => {
+  isLoaded,
+}) => {
   const [activeRiderId, setActiveRiderId] = useState<number | null>(null);
 
   const center = useMemo(
     () => userLocation || pickup || dropoff || defaultCenter,
     [userLocation, pickup, dropoff]
   );
-
-  const { isLoaded } = useJsApiLoader({
-    id: "google-map-script",
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "",
-    libraries: ["places"],
-  });
 
   if (!isLoaded) {
     return (
@@ -161,4 +156,4 @@ export const GoogleMapView = ({
   );
 };
 
-export default GoogleMapView;
+export default NewMapView;

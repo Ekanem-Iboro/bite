@@ -14,7 +14,7 @@ type AuthState = {
   initialize: () => void;
   signIn: (email: string, password: string) => User | null;
   signUp: (name: string, email: string, password: string) => User;
-  signOut: () => void;
+  logout: () => void;
 };
 
 const USERS_KEY = "users";
@@ -81,12 +81,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ users: updated, currentUser: newUser });
     return newUser;
   },
-  signOut: () => {
+  logout: () => {
     if (typeof window !== "undefined") {
       localStorage.removeItem(CURRENT_USER_KEY);
     }
     set({ currentUser: null });
   },
 }));
+
+
 
 

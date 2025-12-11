@@ -8,6 +8,8 @@ import SignUp from "./pages/SignUp";
 import Dashboard from "./pages/Dashboard";
 import Tracking from "./pages/Tracking";
 import RiderProfile from "./pages/RiderProfile";
+import About from "./pages/About";
+import Contact from "./pages/Contact";
 import { useAuthStore } from "./store/useAuthStore";
 
 const PrivateRoute = ({ children }: { children: React.ReactElement }) => {
@@ -28,6 +30,8 @@ const App = () => {
           <Route path="/" element={<Landing />} />
           <Route path="/signin" element={<SignIn />} />
           <Route path="/signup" element={<SignUp />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/contact" element={<Contact />} />
           <Route
             path="/dashboard"
             element={
@@ -45,7 +49,7 @@ const App = () => {
             }
           />
           <Route
-            path="/riders/:id"
+            path="/rider/:id"
             element={
               <PrivateRoute>
                 <RiderProfile />

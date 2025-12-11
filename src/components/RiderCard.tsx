@@ -1,47 +1,42 @@
-import { Star } from "lucide-react";
-import type { Rider } from "@/store/useRideStore";
+import { Star, Navigation, Clock } from "lucide-react";
+import { Rider } from "@/data/riders";
+import { Button } from "./ui/button";
+import { estimateEtaMinutes } from "@/utils/geo";
 
-type Props = {
+interface RiderCardProps {
   rider: Rider;
-  distanceKm: number;
-  etaMinutes: number;
-  trips?: number;
-  onSelect?: () => void;
-  selected?: boolean;
-};
+  distance: number;
+  onSelect: () => void;
+}
 
-export const RiderCard = ({ rider, distanceKm, etaMinutes, trips = 120, onSelect, selected }: Props) => {
+const RiderCard: React.FC<RiderCardProps> = ({ rider, distance, onSelect }) => {
+  const eta = estimateEtaMinutes(distance);
   return (
-    <button
-      type="button"
-      onClick={onSelect}
-      className={`w-full text-left rounded-2xl border px-4 py-3 flex items-center justify-between gap-3 transition-all card-elevated ${
-        selected ? "border-primary ring-2 ring-primary/40 bg-accent/40" : "border-border bg-card"
-      }`}
-    >
-      <div className="flex flex-col gap-1">
-        <div className="flex items-center gap-2">
-          <span className="font-semibold text-sm text-foreground">{rider.name}</span>
-          <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-            <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
-            {rider.rating.toFixed(1)}
-            <span className="text-[10px] text-muted-foreground/70">({trips} trips)</span>
-          </span>
-        </div>
-        <p className="text-xs text-muted-foreground">{rider.vehicle}</p>
-        <div className="flex gap-3 mt-1 text-[11px] text-muted-foreground">
-          <span>{distanceKm.toFixed(2)} km away</span>
-          <span>·</span>
-          <span>ETA {etaMinutes} mins</span>
+    <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 flex items-center justify-between">
+      <div className="flex items-center">
+        <img
+          src={rider.profileImage}
+          alt={rider.name}
+          className="w-16 h-16 rounded-full object-cover"
+        />
+        <div className="ml-4">
+          <h4 className="font-bold text-lg">{rider.name}</h4>
+          <div className="flex items-center text-sm text-gray-600">
+            <Star className="w-4 h-4 mr-1 text-yellow-400 fill-yellow-400" />
+            <span>{rider.rating.toFixed(1)}</span>
+          </div>
+          <div className="flex items-center text-sm text-gray-600 mt-1">
+            <Navigation className="w-4 h-4 mr-1" />
+            <span>{distance.toFixed(2)} km away</span>
+            <span className="mx-2">|</span>
+            <Clock className="w-4 h-4 mr-1" />
+            <span>{eta} min ETA</span>
+          </div>
         </div>
       </div>
-      <div className="px-3 py-1 rounded-full bg-primary/10 text-primary text-[11px] font-medium">
-        Select
-      </div>
-    </button>
+      <Button onClick={onSelect}>Select</Button>
+    </div>
   );
 };
 
 export default RiderCard;
-
-

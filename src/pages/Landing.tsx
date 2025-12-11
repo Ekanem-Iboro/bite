@@ -9,7 +9,7 @@ const Landing = () => {
       <header className="border-b border-border/60">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <img src={logoImage} alt="Logo" className="h-10 w-auto" />
+            <img src={logoImage} alt="Logo" className="h-50 w-auto" />
           </div>
           <div className="flex items-center gap-3">
             <Link to="/signin">

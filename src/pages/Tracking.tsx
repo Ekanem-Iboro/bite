@@ -1,182 +1,189 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import {
+  ChevronDown,
+  ChevronLeft,
+  ChevronUp,
+  MessageCircle,
+  Phone,
+  Star,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import GoogleMapView from "@/components/GoogleMapView";
 import { useRideStore } from "@/store/useRideStore";
-import { estimateEtaMinutes, estimateFare, haversineDistanceKm } from "@/utils/geo";
-import AppFooter from "@/components/layout/AppFooter";
+import { estimateEtaMinutes, haversineDistanceKm } from "@/utils/geo";
+import { Progress } from "@/components/ui/progress";
 
-const MOVE_INTERVAL_MS = 3000;
+const MOVE_INTERVAL_MS = 2000; // Update every 2 seconds for smoother animation
 
 const Tracking = () => {
-    const navigate = useNavigate();
-    const { riderId } = useParams<{ riderId: string }>();
-    const { userLocation, pickup, dropoff, riders, selectedRider } = useRideStore();
+  const { riderId } = useParams<{ riderId: string }>();
+  const { userLocation, pickup, dropoff, riders, selectedRider } =
+    useRideStore();
 
-    const rider = useMemo(() => {
-        const idNum = Number(riderId);
-        return riders.find((r) => r.id === idNum) ?? selectedRider ?? riders[0];
-    }, [riderId, riders, selectedRider]);
+  const handleWhatsApp = () => {
+    // Format phone number for WhatsApp (remove spaces, dashes, etc.)
+    const phoneNumber = "1234567890"; // Replace with actual rider phone
+    window.open(`https://wa.me/${phoneNumber}`, "_blank");
+  };
 
-    const [simulatedCoords, setSimulatedCoords] = useState(
-        rider ? { lat: rider.lat, lng: rider.lng } : userLocation ?? { lat: 6.5244, lng: 3.3792 },
-    );
-    const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const handleCall = () => {
+    window.location.href = "tel:+1234567890";
+  };
+  //
+  const rider = useMemo(() => {
+    const idNum = Number(riderId);
+    return riders.find((r) => r.id === idNum) ?? selectedRider;
+  }, [riderId, riders, selectedRider]);
 
-    const target = pickup?.coords ?? userLocation ?? { lat: 6.5244, lng: 3.3792 };
+  const [simulatedCoords, setSimulatedCoords] = useState(
+    rider ? rider.location : null
+  );
+  const [panelOpen, setPanelOpen] = useState(true);
 
-    useEffect(() => {
-        if (!rider) return;
-        setSimulatedCoords({ lat: rider.lat, lng: rider.lng });
-        setElapsedSeconds(0);
-    }, [rider]);
+  const pickupTarget = pickup?.coords ?? userLocation;
 
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setElapsedSeconds((prev) => prev + MOVE_INTERVAL_MS / 1000);
-            setSimulatedCoords((prev) => {
-                const factor = 0.2;
-                const lat = prev.lat + (target.lat - prev.lat) * factor;
-                const lng = prev.lng + (target.lng - prev.lng) * factor;
-                return { lat, lng };
-            });
-        }, MOVE_INTERVAL_MS);
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (!rider || !pickupTarget) return;
 
-        return () => clearInterval(interval);
-    }, [target.lat, target.lng]);
+    let traveled = 0;
 
-    const tripInfo = useMemo(() => {
-        if (!pickup || !dropoff) return null;
-        const distanceKm = haversineDistanceKm(pickup.coords, dropoff.coords);
-        const fare = estimateFare(distanceKm);
-        const eta = estimateEtaMinutes(distanceKm);
-        return { distanceKm, fare, eta };
-    }, [pickup, dropoff]);
+    const interval = setInterval(() => {
+      setSimulatedCoords((prev) => {
+        if (!prev) return null;
+        // Move rider towards pickup location
+        const remainingDistance = haversineDistanceKm(prev, pickupTarget);
+        if (remainingDistance < 0.01) {
+          clearInterval(interval);
+          return prev;
+        }
 
-    const distanceToUserKm = useMemo(() => {
-        if (!userLocation) return null;
-        return haversineDistanceKm(simulatedCoords, userLocation);
-    }, [simulatedCoords, userLocation]);
-
-    const remainingEta = useMemo(() => {
-        if (!distanceToUserKm) return null;
-        return estimateEtaMinutes(distanceToUserKm);
-    }, [distanceToUserKm]);
-
-    if (!rider) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-background">
-                <div className="text-center space-y-3">
-                    <p className="text-sm text-muted-foreground">
-                        No rider selected. Please go back to the dashboard and choose a rider.
-                    </p>
-                    <Button variant="hero" onClick={() => navigate("/dashboard")}>
-                        Back to dashboard
-                    </Button>
-                </div>
-            </div>
+        const step = Math.min(0.1, remainingDistance * 0.1); // Move 10% of remaining dist or 100m
+        traveled += step;
+        const bearing = Math.atan2(
+          pickupTarget.lng - prev.lng,
+          pickupTarget.lat - prev.lat
         );
-    }
+        const lat = prev.lat + (step / 111.32) * Math.cos(bearing);
+        const lng =
+          prev.lng +
+          (step / (111.32 * Math.cos((prev.lat * Math.PI) / 180))) *
+            Math.sin(bearing);
 
+        return { lat, lng };
+      });
+    }, MOVE_INTERVAL_MS);
+
+    return () => clearInterval(interval);
+  }, [rider, pickupTarget]);
+
+  const remainingDistance = useMemo(() => {
+    if (!simulatedCoords || !pickupTarget) return null;
+    return haversineDistanceKm(simulatedCoords, pickupTarget);
+  }, [simulatedCoords, pickupTarget]);
+
+  const remainingEta = useMemo(() => {
+    if (remainingDistance === null) return null;
+    return estimateEtaMinutes(remainingDistance);
+  }, [remainingDistance]);
+
+  const initialDistance = useMemo(() => {
+    if (!rider || !pickupTarget) return null;
+    return haversineDistanceKm(rider.location, pickupTarget);
+  }, [rider, pickupTarget]);
+
+  const progressValue = useMemo(() => {
+    if (initialDistance === null || remainingDistance === null) return 0;
+    if (initialDistance === 0) return 100;
+    return Math.max(0, 100 - (remainingDistance / initialDistance) * 100);
+  }, [initialDistance, remainingDistance]);
+
+  if (!rider || !pickupTarget) {
+    // Navigate back or show error if essential data is missing
     return (
-        <div className="min-h-screen bg-background flex flex-col">
-            <header className="border-b border-border/60">
-                <div className="container mx-auto px-4 py-3 flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                        <Link to="/dashboard" className="text-xs text-muted-foreground hover:text-primary">
-                            ← Back to dashboard
-                        </Link>
-                        <div>
-                            <p className="font-heading text-sm font-semibold text-foreground">
-                                Tracking {rider.name}
-                            </p>
-                            <p className="text-[11px] text-muted-foreground">
-                                Vehicle: {rider.vehicle} · Rating: {rider.rating.toFixed(1)} ⭐
-                            </p>
-                        </div>
-                    </div>
-                    <div className="text-right text-[11px] text-muted-foreground">
-                        <p>Simulated movement every 3 seconds</p>
-                        <p>Elapsed: {elapsedSeconds}s</p>
-                    </div>
-                </div>
-            </header>
-
-            <main className="flex-1 container mx-auto px-4 py-6 grid lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] gap-6">
-                <section className="flex flex-col gap-4 min-h-[320px]">
-                    <GoogleMapView
-                        userLocation={userLocation ?? target}
-                        riders={[
-                            {
-                                ...rider,
-                                lat: simulatedCoords.lat,
-                                lng: simulatedCoords.lng,
-                            },
-                        ]}
-                        pickup={pickup?.coords ?? null}
-                        dropoff={dropoff?.coords ?? null}
-                        onRiderClick={(id) => navigate(`/riders/${id}`)}
-                    />
-                </section>
-
-                <aside className="flex flex-col gap-4">
-                    <div className="rounded-3xl border border-border bg-card card-elevated p-4 sm:p-5 space-y-3">
-                        <h2 className="font-heading text-base font-semibold">Live trip details</h2>
-                        {tripInfo && (
-                            <div className="text-xs space-y-1">
-                                <p>
-                                    Distance pickup → drop-off:{" "}
-                                    <span className="font-semibold text-foreground">
-                                        {tripInfo.distanceKm.toFixed(2)} km
-                                    </span>
-                                </p>
-                                <p>
-                                    Estimated fare:{" "}
-                                    <span className="font-semibold text-foreground">
-                                        ₦{tripInfo.fare.toLocaleString()}
-                                    </span>
-                                </p>
-                                <p>
-                                    Initial ETA:{" "}
-                                    <span className="font-semibold text-foreground">{tripInfo.eta} mins</span>
-                                </p>
-                            </div>
-                        )}
-
-                        <div className="mt-3 rounded-2xl bg-accent/60 border border-accent px-3 py-2 text-xs space-y-1">
-                            <p className="font-semibold text-foreground">Rider → you</p>
-                            {distanceToUserKm != null && (
-                                <p>
-                                    Current distance:{" "}
-                                    <span className="font-semibold text-foreground">
-                                        {distanceToUserKm.toFixed(2)} km
-                                    </span>
-                                </p>
-                            )}
-                            {remainingEta != null && (
-                                <p>
-                                    Updated ETA:{" "}
-                                    <span className="font-semibold text-foreground">{remainingEta} mins</span>
-                                </p>
-                            )}
-                        </div>
-                    </div>
-
-                    <div className="rounded-3xl border border-dashed border-border/70 bg-muted/40 p-4 text-[11px] text-muted-foreground space-y-1">
-                        <p className="font-semibold text-foreground mb-1">How tracking works</p>
-                        <p>
-                            Every {MOVE_INTERVAL_MS / 1000} seconds we move the rider position slightly closer to
-                            your pickup location using simple interpolation. This updates the marker on the
-                            map-like view and recalculates the ETA.
-                        </p>
-                    </div>
-                </aside>
-            </main>
-            <AppFooter />
-        </div>
+      <div className="min-h-screen flex items-center justify-center">
+        <p>Loading trip details...</p>
+      </div>
     );
+  }
+  const handleRiderMarkerClick = (riderId: number) => {
+    const rider = riders.find((r) => r.id === riderId);
+    if (rider) {
+      // For now, we just log it. The user wants to go to the rider profile page.
+      // We will implement this later.
+      console.log("Rider clicked:", rider);
+      navigate(`/rider/${rider.id}`);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex flex-col relative">
+      <div className="absolute top-0 left-0 w-full h-full">
+        <GoogleMapView
+          userLocation={userLocation}
+          riders={
+            simulatedCoords ? [{ ...rider, location: simulatedCoords }] : []
+          }
+          pickup={pickup?.coords}
+          dropoff={dropoff?.coords}
+          onRiderClick={handleRiderMarkerClick}
+        />
+      </div>
+
+      <div
+        className={`absolute bottom-[80px] left-0 right-0 mx-auto bg-white shadow-2xl p-6 transition-transform duration-300 z-10 md:w-[50%] "
+        }`}
+      >
+        <div className="flex justify-between items-center cursor-pointer">
+          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+            <ChevronLeft />
+          </Button>
+          <h2 className="text-2xl font-bold">
+            {remainingEta !== null
+              ? `Arriving in ${remainingEta} min`
+              : "En route"}
+          </h2>
+        </div>
+
+        <div className="mt-4">
+          <Progress value={progressValue} className="w-full" />
+          <p className="text-sm text-gray-500 mt-2">
+            {remainingDistance !== null
+              ? `${remainingDistance.toFixed(2)} km to pickup`
+              : "Calculating..."}
+          </p>
+        </div>
+
+        <div className="border-t border-gray-200 mt-6 pt-6">
+          <div className="flex items-center">
+            <img
+              src={rider.profileImage}
+              alt={rider.name}
+              className="w-16 h-16 rounded-full object-cover"
+            />
+            <div className="ml-4 flex-1">
+              <h3 className="text-xl font-bold">{rider.name}</h3>
+              <div className="flex items-center mt-1">
+                <Star className="text-yellow-400 fill-yellow-400" size={20} />
+                <span className="ml-1 font-bold">
+                  {rider.rating.toFixed(1)}
+                </span>
+              </div>
+            </div>
+            <div className="flex space-x-3">
+              <Button size="icon" variant="outline" onClick={handleCall}>
+                <Phone />
+              </Button>
+              <Button size="icon" variant="outline" onClick={handleWhatsApp}>
+                <MessageCircle />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default Tracking;
-
-
