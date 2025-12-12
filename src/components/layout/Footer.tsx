@@ -54,7 +54,7 @@ export const Footer = () => {
         <div className="flex flex-col justify-center items-center gap-8 lg:gap-12">
           <div className=" flex flex-col justify-center items-center mb-8 lg:mb-0">
             <Link to="/" className="flex items-center gap-3 mb-4">
-              <img src={logo} alt="" width={"300px"} />
+              <img src={logo} alt=""  className={` md:w-[300px] w- 200px`} />
             </Link>
             <p className="text-gray-400 text-sm mb-6 max-w-xs text-center">
               Fast, reliable rider matching and tracking. Sign up, set your

@@ -1,36 +1,20 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import {
-  ChevronDown,
-  ChevronLeft,
-  ChevronUp,
-  MessageCircle,
-  Phone,
-  Star,
-} from "lucide-react";
+import { ChevronLeft, MessageCircle, Phone, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import GoogleMapView from "@/components/GoogleMapView";
 import { useRideStore } from "@/store/useRideStore";
 import { estimateEtaMinutes, haversineDistanceKm } from "@/utils/geo";
 import { Progress } from "@/components/ui/progress";
 
-const MOVE_INTERVAL_MS = 2000; // Update every 2 seconds for smoother animation
+const MOVE_INTERVAL_MS = 2000;
 
 const Tracking = () => {
   const { riderId } = useParams<{ riderId: string }>();
   const { userLocation, pickup, dropoff, riders, selectedRider } =
     useRideStore();
+  const navigate = useNavigate();
 
-  const handleWhatsApp = () => {
-    // Format phone number for WhatsApp (remove spaces, dashes, etc.)
-    const phoneNumber = "1234567890"; // Replace with actual rider phone
-    window.open(`https://wa.me/${phoneNumber}`, "_blank");
-  };
-
-  const handleCall = () => {
-    window.location.href = "tel:+1234567890";
-  };
-  //
   const rider = useMemo(() => {
     const idNum = Number(riderId);
     return riders.find((r) => r.id === idNum) ?? selectedRider;
@@ -39,28 +23,22 @@ const Tracking = () => {
   const [simulatedCoords, setSimulatedCoords] = useState(
     rider ? rider.location : null
   );
-  const [panelOpen, setPanelOpen] = useState(true);
 
   const pickupTarget = pickup?.coords ?? userLocation;
 
-  const navigate = useNavigate();
   useEffect(() => {
     if (!rider || !pickupTarget) return;
-
-    let traveled = 0;
 
     const interval = setInterval(() => {
       setSimulatedCoords((prev) => {
         if (!prev) return null;
-        // Move rider towards pickup location
         const remainingDistance = haversineDistanceKm(prev, pickupTarget);
         if (remainingDistance < 0.01) {
           clearInterval(interval);
           return prev;
         }
 
-        const step = Math.min(0.1, remainingDistance * 0.1); // Move 10% of remaining dist or 100m
-        traveled += step;
+        const step = Math.min(0.1, remainingDistance * 0.1);
         const bearing = Math.atan2(
           pickupTarget.lng - prev.lng,
           pickupTarget.lat - prev.lat
@@ -99,27 +77,33 @@ const Tracking = () => {
     return Math.max(0, 100 - (remainingDistance / initialDistance) * 100);
   }, [initialDistance, remainingDistance]);
 
-  if (!rider || !pickupTarget) {
-    // Navigate back or show error if essential data is missing
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p>Loading trip details...</p>
-      </div>
-    );
-  }
   const handleRiderMarkerClick = (riderId: number) => {
     const rider = riders.find((r) => r.id === riderId);
     if (rider) {
-      // For now, we just log it. The user wants to go to the rider profile page.
-      // We will implement this later.
-      console.log("Rider clicked:", rider);
       navigate(`/rider/${rider.id}`);
     }
   };
 
+  const handleSMS = () => {
+    const phoneNumber = "1234567890";
+    window.location.href = `sms:${phoneNumber}?body=Hi, I would like to inquire about my ride.`;
+  };
+  const handleCall = () => {
+    window.location.href = "tel:+1234567890";
+  };
+
+  if (!rider || !pickupTarget) {
+    return (
+      <div className="flex items-center justify-center h-screen w-screen">
+        <p>Loading trip details...</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen flex flex-col relative">
-      <div className="absolute top-0 left-0 w-full h-full">
+    <div className="h-screen w-screen flex flex-col">
+      {/* Map Section - Takes remaining space */}
+      <div className="flex-1 relative">
         <GoogleMapView
           userLocation={userLocation}
           riders={
@@ -129,54 +113,75 @@ const Tracking = () => {
           dropoff={dropoff?.coords}
           onRiderClick={handleRiderMarkerClick}
         />
+
+        {/* Back Button Overlay */}
+        <div className="absolute top-4 left-4 z-10">
+          <Button
+            variant="secondary"
+            size="icon"
+            onClick={() => navigate(-1)}
+            className="shadow-lg bg-white hover:bg-gray-100"
+          >
+            <ChevronLeft className="w-5 h-5 text-red-700" />
+          </Button>
+        </div>
       </div>
 
-      <div
-        className={`absolute bottom-[80px] left-0 right-0 mx-auto bg-white shadow-2xl p-6 transition-transform duration-300 z-10 md:w-[50%] "
-        }`}
-      >
-        <div className="flex justify-between items-center cursor-pointer">
-          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
-            <ChevronLeft />
-          </Button>
-          <h2 className="text-2xl font-bold">
-            {remainingEta !== null
-              ? `Arriving in ${remainingEta} min`
-              : "En route"}
-          </h2>
+      {/* Bottom Info Panel - Fixed height */}
+      <div className="bg-white border-t border-gray-200 shadow-2xl">
+        {/* ETA Section */}
+        <div className="px-4 py-3 border-b border-gray-100">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-gray-900">
+              {remainingEta !== null ? `${remainingEta} min` : "Calculating..."}
+            </h2>
+            <p className="text-sm text-gray-500 mt-1">
+              {remainingDistance !== null
+                ? `${remainingDistance.toFixed(2)} km away`
+                : "Estimating arrival"}
+            </p>
+          </div>
+          <Progress value={progressValue} className="w-full mt-3 h-2" />
         </div>
 
-        <div className="mt-4">
-          <Progress value={progressValue} className="w-full" />
-          <p className="text-sm text-gray-500 mt-2">
-            {remainingDistance !== null
-              ? `${remainingDistance.toFixed(2)} km to pickup`
-              : "Calculating..."}
-          </p>
-        </div>
-
-        <div className="border-t border-gray-200 mt-6 pt-6">
-          <div className="flex items-center">
+        {/* Driver Info Section */}
+        <div className="px-4 py-4">
+          <div className="flex items-center gap-3">
             <img
               src={rider.profileImage}
               alt={rider.name}
-              className="w-16 h-16 rounded-full object-cover"
+              className="w-14 h-14 rounded-full object-cover border-2 border-gray-200"
             />
-            <div className="ml-4 flex-1">
-              <h3 className="text-xl font-bold">{rider.name}</h3>
-              <div className="flex items-center mt-1">
-                <Star className="text-yellow-400 fill-yellow-400" size={20} />
-                <span className="ml-1 font-bold">
+            <div className="flex-1 min-w-0">
+              <h3 className="text-lg font-bold text-gray-900 truncate">
+                {rider.name}
+              </h3>
+              <div className="flex items-center gap-1 mt-0.5">
+                <Star className="text-yellow-400 fill-yellow-400 w-4 h-4" />
+                <span className="text-sm font-semibold text-gray-700">
                   {rider.rating.toFixed(1)}
                 </span>
+                {/* <span className="text-sm text-gray-500 ml-1">
+                  • {rider. || "Standard"}
+                </span> */}
               </div>
             </div>
-            <div className="flex space-x-3">
-              <Button size="icon" variant="outline" onClick={handleCall}>
-                <Phone />
+            <div className="flex gap-2">
+              <Button
+                size="icon"
+                variant="outline"
+                onClick={handleCall}
+                className="h-11 w-11 rounded-full"
+              >
+                <Phone className="w-5 h-5" />
               </Button>
-              <Button size="icon" variant="outline" onClick={handleWhatsApp}>
-                <MessageCircle />
+              <Button
+                size="icon"
+                variant="outline"
+                onClick={handleSMS}
+                className="h-11 w-11 rounded-full"
+              >
+                <MessageCircle className="w-5 h-5" />
               </Button>
             </div>
           </div>

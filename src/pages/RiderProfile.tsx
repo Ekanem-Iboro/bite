@@ -65,14 +65,13 @@ const RiderProfile = () => {
     navigate(`/tracking/${rider.id}`);
   };
 
-  const handleWhatsApp = () => {
-    // Format phone number for WhatsApp (remove spaces, dashes, etc.)
-    const phoneNumber = "1234567890"; // Replace with actual rider phone
-    window.open(`https://wa.me/${phoneNumber}`, "_blank");
+  const handleSMS = () => {
+    const phoneNumber = "1234567890";
+    window.location.href = `sms:${phoneNumber}?body=Hi, I would like to inquire about my ride.`;
   };
 
   const handleCall = () => {
-    window.location.href = "tel:+1234567890"; 
+    window.location.href = "tel:+1234567890";
   };
 
   const handleRating = (rating: number) => {
@@ -217,7 +216,7 @@ const RiderProfile = () => {
               <Button
                 variant="outline"
                 className="w-full h-12 justify-start text-left hover:bg-green-50 hover:border-green-500"
-                onClick={handleWhatsApp}
+                onClick={handleSMS}
               >
                 <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center mr-3">
                   <MessageSquare className="text-white" size={20} />
@@ -240,7 +239,6 @@ const RiderProfile = () => {
                   <p className="text-xs text-gray-500">Direct voice call</p>
                 </div>
               </Button>
-            
             </CardContent>
           </Card>
 

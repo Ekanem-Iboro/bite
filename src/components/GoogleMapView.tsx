@@ -54,7 +54,7 @@ export const GoogleMapView = ({
   }
 
   return (
-    <div className="w-full  md:h-full border border-border bg-muted">
+    <div className="w-full  h-full border border-border bg-muted">
       <GoogleMap
         mapContainerStyle={containerStyle}
         center={center}
